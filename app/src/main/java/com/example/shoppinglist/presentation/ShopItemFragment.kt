@@ -16,7 +16,10 @@ import com.example.shoppinglist.R
 import com.example.shoppinglist.domain.ShopItem
 import com.google.android.material.textfield.TextInputLayout
 
-class ShopItemFragment : Fragment() {
+class ShopItemFragment(
+    private val screenMode: String = MODE_UNKNOWN,
+    private val shopItemId: Int = ShopItem.UNDEFINED_ID
+) : Fragment() {
 
     private lateinit var viewModel: ShopItemViewModel
 
@@ -25,9 +28,6 @@ class ShopItemFragment : Fragment() {
     private lateinit var etName: EditText
     private lateinit var etCount: EditText
     private lateinit var buttonSave: Button
-
-    private var screenMode = MODE_UNKNOWN
-    private var shopItemId = ShopItem.UNDEFINED_ID
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,16 +40,16 @@ class ShopItemFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        parseIntent()
+        parseParams()
         viewModel = ViewModelProvider(this)[ShopItemViewModel::class.java]
-        initViews()
+        initViews(view)
         addTextChangeListeners()
         launchRightMode()
         observeViewModer()
     }
 
     private fun observeViewModer() {
-        viewModel.errorInputCount.observe(this) {
+        viewModel.errorInputCount.observe(viewLifecycleOwner) {
             val message = if (it) {
                 getString(R.string.error_input_count)
             } else {
@@ -57,7 +57,7 @@ class ShopItemFragment : Fragment() {
             }
             tilCount.error = message
         }
-        viewModel.errorInputName.observe(this) {
+        viewModel.errorInputName.observe(viewLifecycleOwner) {
             val message = if (it) {
                 getString(R.string.error_input_name)
             } else {
@@ -65,7 +65,7 @@ class ShopItemFragment : Fragment() {
             }
             tilName.error = message
         }
-        viewModel.shouldCloseScreen.observe(this) {
+        viewModel.shouldCloseScreen.observe(viewLifecycleOwner) {
             finish()
         }
     }
@@ -105,7 +105,7 @@ class ShopItemFragment : Fragment() {
 
     private fun launchEditMode() {
         viewModel.getShopItem(shopItemId)
-        viewModel.shopItem.observe(this) {
+        viewModel.shopItem.observe(viewLifecycleOwner) {
             etName.setText(it.name)
             etCount.setText(it.count.toString())
         }
@@ -120,29 +120,21 @@ class ShopItemFragment : Fragment() {
         }
     }
 
-    private fun parseIntent() {
-        if (!requireActivity().intent.hasExtra(EXTRA_SCREEN_MODE)) {
+    private fun parseParams() {
+        if (screenMode != MODE_EDIT && screenMode != MODE_ADD) {
             throw RuntimeException("Paras screen mode is absent")
         }
-        val mode = intent.getStringExtra(EXTRA_SCREEN_MODE)
-        if (mode != MODE_EDIT && mode != MODE_ADD) {
-            throw RuntimeException("Unknown screen mode $mode")
-        }
-        screenMode = mode
-        if (screenMode == MODE_EDIT) {
-            if (!intent.hasExtra(EXTRA_SHOP_ITEM_ID)) {
-                throw RuntimeException("Paras shop item id is absent")
-            }
-            shopItemId = intent.getIntExtra(EXTRA_SHOP_ITEM_ID, ShopItem.UNDEFINED_ID)
+        if (screenMode == MODE_EDIT && shopItemId == ShopItem.UNDEFINED_ID) {
+            throw RuntimeException("Paras shop item id is absent")
         }
     }
 
-    private fun initViews() {
-        tilName = findViewById(R.id.til_name)
-        tilCount = findViewById(R.id.til_count)
-        etName = findViewById(R.id.et_name)
-        etCount = findViewById(R.id.et_count)
-        buttonSave = findViewById(R.id.save_button)
+    private fun initViews(view: View) {
+            tilName = view.findViewById(R.id.til_name)
+            tilCount = view.findViewById(R.id.til_count)
+            etName = view.findViewById(R.id.et_name)
+            etCount = view.findViewById(R.id.et_count)
+            buttonSave = view.findViewById(R.id.save_button)
     }
 
 
