@@ -1,5 +1,6 @@
 package com.example.shoppinglist.presentation
 
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -54,6 +55,14 @@ class MainActivity : AppCompatActivity(), ShopItemFragment.OnEditingFinishedList
                 launchFragment(ShopItemFragment.newInstanceAddItem())
             }
         }
+        contentResolver.query(
+            Uri.parse("content://com.example.shoppinglist/shop_items"),
+            null,
+            null,
+            null,
+            null,
+            null
+        )
     }
 
     override fun onEditingFinished() {
