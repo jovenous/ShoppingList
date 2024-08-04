@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
+    id("com.google.devtools.ksp")
+    id("kotlin-kapt")
 }
 
 android {
@@ -26,6 +28,9 @@ android {
             )
         }
     }
+    buildFeatures {
+        dataBinding = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
@@ -36,6 +41,17 @@ android {
 }
 
 dependencies {
+
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    ksp("com.google.dagger:dagger-compiler:2.51.1")
+    implementation("com.google.dagger:dagger:2.51.1")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
